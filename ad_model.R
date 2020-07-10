@@ -39,7 +39,7 @@ ad_mod = function(times,sp,parms){
 			# This is an internal process of D. 
 			# How does Nitrogen "grow" in availability for D? 
 			dN2 = N2 * ( gN2 *(1 - N2/K_N2 ) - cA2*D ) 
-			
+
 	  	list( c(dA,dD,dN1,dN2) )
 		})	
 
@@ -79,4 +79,16 @@ delta1 = 0.1
 times  = seq(from = 0, to = tend, by = delta1)
 tl = length(times)
 minit =  c(A =1, D=1, N1 = K_N1, N2=K_N2 )
-out_temp = ode(y=minit, times=times, func=ad_mod, parms=parms)
+ad_out = ode(y=minit, times=times, func=ad_mod, parms=parms)
+
+#=============================================================================
+# Plot
+#=============================================================================
+
+plot( ad_out [,2], t="l", ylab = "Time", xlab = "Population density")
+cuse = c("red","blue","green")
+for ( n in 3:5) {
+	lines (ad_out[,n], col = cuse[n] )
+}
+
+
