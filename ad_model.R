@@ -26,12 +26,20 @@ library(deSolve)
 ad_mod = function(times,sp,parms){
 	with( as.list(c(parms, sp )),
 		{	#####Consumer dynamics
-		dA = A * ( rA *(cA1*N1 +cA2*D*muD)  - aij*D- muA ) #Algae: consumption of N2 is mortality of Diazotroph
-		dD = D * ( rD *(cD2*N2) - aji*A - muD )			 #Diazotroph
+			#Algae: consumption of N2 is mortality of Diazotroph, competition
+			#for light via aij*D
+			dA = A * ( rA *(cA1*N1 +cA2*D*muD)  - aij*D- muA ) 
+			#Diazotroph: Competition for light via aji*A
+			dD = D * ( rD *(cD2*N2) - aji*A - muD )			 
 
-		####Resource dynamics 
-		dN1 = N1 * ( gN1 *(1 - N1/K_N1 ) - cA1*A )  #Logistic growth - consumption
-		dN2 = N2 * ( gN2 *(1 - N2/K_N2 ) - cA2*D ) #How does Nitrogen "grow" in availability for D? 
+			####Resource dynamics 
+			# Birth - Death = Logistic growth - consumption
+			dN1 = N1 * ( gN1 *(1 - N1/K_N1 ) - cA1*A )  
+			
+			# This is an internal process of D. 
+			# How does Nitrogen "grow" in availability for D? 
+			dN2 = N2 * ( gN2 *(1 - N2/K_N2 ) - cA2*D ) 
+			
 	  	list( c(dA,dD,dN1,dN2) )
 		})	
 
@@ -40,21 +48,25 @@ ad_mod = function(times,sp,parms){
 #=============================================================================
 # Set values of the population parameters
 #=============================================================================
-rA = 2 
-cA1 = 0.5
-cA2 = 0.5
-muA = 0.5 
-rD =  1
-cD2 = 1 
-muD = 0.8 
-gN1 =  100
-K_N1 = 100  
-gN2 = 100
-K_N2 = 100 
+rA = 2 #Algae intrinsic growth
+cA1 = 0.5 #Algal consumption of N1
+cA2 = 0.5 #Algal consumption of N2
+aij = 0.8 #Light competition from D
+muA = 0.5 # Mortality of A
+
+rD =  1 #Diazotroph intrinsic growth
+cD2 = 1 #D consumption of N2
+aji = 0.8 #Light competition from A
+muD = 0.8 #D mortalityt
+
+gN1 =  100 #Growth of resource N1
+K_N1 = 100  #Carrying capacity of resource N1
+gN2 = 100 #Growth of resource N2 
+K_N2 = 100 #Carrying capacity of resource N2
 
 parms = list(
-			rA = rA, cA1 = cA1, cA2 = cA2, aij = 0.8, muA = muA, 
-			rD = rD, cD2 = cD2, muD = muD, aji = 0.8, 
+			rA = rA, cA1 = cA1, cA2 = cA2, aij = aij, muA = muA, 
+			rD = rD, cD2 = cD2, muD = muD, aji = aji, 
 			gN1 = gN1, K_N1 = K_N1,  
 			gN2 = gN2, K_N2 = K_N2 
 		 )
