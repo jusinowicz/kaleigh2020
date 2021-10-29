@@ -23,31 +23,29 @@ library(deSolve)
 # an interspecific competition coefficient)
 #=============================================================================
 
-ad_mod = function(times,sp,parms){
+agawin_mod = function(times,sp,parms){
 	with( as.list(c(parms, sp )),
 		{	#####Consumer dynamics
-			#Algae: consumption of N2 is mortality of Diazotroph, competition
-			#for light via aij*D
-			dA = A * ( rA *(cA1*N1 +cA2*D*muD)  - aij*D- muA ) 
-			#Diazotroph: Competition for light via aji*A
-			dD = D * ( rD *(cD2*N2) - aji*A - muD )			 
+			#Algae: 
+			dPn = Pn * ( gn_ave - mn) 
+			#N fixer: 
+			dPf = Pf * ( gfno3 + gfn2 - mf )			 
+			####Resource (N)
+			dR = D*(Rin - R) - Qn*gn_ave*Pn - Pf*(Qf*gfno3 - ef*Qf*gfn2)
 
-			####Resource dynamics 
-			# Birth - Death = Logistic growth - consumption
-			dN1 = N1 * ( gN1 *(1 - N1/K_N1 ) - cA1*A )  
-			
-			# This is an internal process of D. 
-			# How does Nitrogen "grow" in availability for D? 
-			dN2 = N2 * ( gN2 *(1 - N2/K_N2 ) - cA2*D ) 
-
-	  	list( c(dA,dD,dN1,dN2) )
+	  	list( c(dA,dD,dR) )
 		})	
 
 }  
 
+
 #=============================================================================
 # Set values of the population parameters
 #=============================================================================
+#From table 3
+mn = 0.014
+mf =0.014
+
 rA = 2 #Algae intrinsic growth
 cA1 = 0.5 #Algal consumption of N1
 cA2 = 0.5 #Algal consumption of N2
