@@ -93,7 +93,7 @@ Qf = 0.092#cell quota of N
 
 D = 0.014 #dilution rate in experiment. 
 Iin = 40 #Light in, HL
-Rin = 8 #These are the treatment levels of N input. 0, 0.1, 0.5, 8. 
+Rin = 0.5 #These are the treatment levels of N input. 0, 0.1, 0.5, 8. 
 
 ###Parametes for light intensity calculation (eqs 7-10)
 #Growth rate is spatially (i.e. depth) dependent. The average growth rates (eqs 4 - 6) for 
@@ -105,7 +105,7 @@ Rin = 8 #These are the treatment levels of N input. 0, 0.1, 0.5, 8.
 #equations 9-10. These equations only require the endpoints of light intensity: 
 #i.e., the light at depth 0, and at the mixing depth z_M, at the bottom of the 
 #container.
-Kbg = 4.75 #Background turbidity. In a few cases this is 11
+Kbg = 11 #4.75 #Background turbidity. In a few cases this is 11
 zM = 0.05 #mixing depth
 kF = 5.68 #light attenutation constants. 
 kN = 4.86 #This is determined by eq 13 for Synechococcus
@@ -123,14 +123,14 @@ parms = list(
 #=============================================================================
 # Run the model with initial conditions 
 #=============================================================================
-tend = 100
+tend = 3000
 delta1 = 0.1
 times  = seq(from = 0, to = tend, by = delta1)
 tl = length(times)
 #Use ICs to help set the scenario. E.g., when Pn or Pf =0, 
 #this is a monoculture experiment. Otherwise, use ICs from those reported in 
 #Table 1
-minit =  c(Pn = 0,Pf = 0.5, R = Rin)
+minit =  c(Pn = 0.06,Pf = 0.5, R = Rin)
 
 #Run the model
 agawin_out = ode(y=minit, times=times, func=agawin_mod, parms=parms)
