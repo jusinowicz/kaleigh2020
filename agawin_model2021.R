@@ -15,25 +15,44 @@ library(deSolve)
 
 #=============================================================================
 # Define the population dynamics through the following function
-# This model includes two consumers: A(lgae) and D(iazotrophs)
-# This model includes two resources: N1 and N2
-# A consumes N1 and N2 in the form of dead D
-# D consumes N2 only from an internal fixation process
-# Competition for light is introduced as a per-capita shading factor (essentially
-# an interspecific competition coefficient)
+# This model includes one consumers: Pn and Pf 
+# 	Pn is a consumer of Nitrogen and light. 
+#	Pf is a consumer of Nitrogen and light, but also fixes N. 
+# This model includes one resource: R 
+# 	R can be added at a constant rate. 
+#	R is produced by the mortality of both Pn and Pf
+#
+# The growth rates of both species are determined by light intensity. 
+# Light intensity is a function of depth, and decreases as densities of both
+# species increase. The extra set of equations in the model definition 
+# calculate a new average growth rate each time step based on these factors.  
 #=============================================================================
 
 agawin_mod = function(times,sp,parms){
 	with( as.list(c(parms, sp )),
-		{	#####Consumer dynamics
-			#Algae: 
-			dPn = Pn * ( gn_ave - mn) 
-			#N fixer: 
-			dPf = Pf * ( gfno3 + gfn2 - mf )			 
-			####Resource (N)
-			dR = D*(Rin - R) - Qn*gn_ave*Pn - Pf*(Qf*gfno3 - ef*Qf*gfn2)
+		{	
+			##### Determine species-specific average growth rates as a function
+			##### of resource availibility and light intensity (eqs. 7, 9-10)
+			Iout = Iin *(exp( zM*(-Kbg - kN*Pn - kF*Pf) ) ) #eq 7 at zM
+		
+			#Average growth rate of Pn
+			gn_ave = gmn * (R/(Mn+R))*( ( log(Hn+Iin) - log(Hn+Iout) ) / 
+			(log(Iin)-log(Iout)) )
 
-	  	list( c(dA,dD,dR) )
+			#Average growth rate of Pf
+			gf_ave = (gmfn2 *Mf + gmfn03*R)/(Mf+R)*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
+			(log(Iin)-log(Iout)) )
+
+			##### Consumer dynamics 
+			#Algae (Eq 1) : 
+			dPn = Pn * ( gn_ave - mn) 
+			#N fixer (Eq 2): 
+			dPf = Pf * ( gf_ave - mf )			 
+			
+			####Resource (N) (Eq 3): 
+			dR = D*(Rin - R) - Qn*gn_ave*Pn - Pf*gf_ave*Qf + ef* Pf*gf_ave*Qf
+
+	  	list( c(dPn,dPf,dR) )
 		})	
 
 }  
@@ -42,31 +61,63 @@ agawin_mod = function(times,sp,parms){
 #=============================================================================
 # Set values of the population parameters
 #=============================================================================
-#From table 3
-mn = 0.014
-mf =0.014
+###From table 3
+###Non-fixer (there are two of these, chlorella for now)
+mn = 0.014 #mortality
 
-rA = 2 #Algae intrinsic growth
-cA1 = 0.5 #Algal consumption of N1
-cA2 = 0.5 #Algal consumption of N2
-aij = 0.8 #Light competition from D
-muA = 0.5 # Mortality of A
+#These terms are all for the growth rate gn_ave. 
+gmn = 0.060 #Max gr
+Mn = 0.308 #Half saturation constants 
+Hn = 80
 
-rD =  1 #Diazotroph intrinsic growth
-cD2 = 1 #D consumption of N2
-aji = 0.8 #Light competition from A
-muD = 0.8 #D mortalityt
+###Fixer
+mf =0.014 #mortality
 
-gN1 =  100 #Growth of resource N1
-K_N1 = 100  #Carrying capacity of resource N1
-gN2 = 100 #Growth of resource N2 
-K_N2 = 100 #Carrying capacity of resource N2
+#These terms are all for the growth rates gfno3 and gfn2. There are two sets of
+#these for high and low light: 
+#Use the high light treatment for now.
+gmfn03 = .084
+gmfn2 =  0.025
+#Half saturation constants 
+#All of Hs and Ms are set to be equal by the authors. 
+Hf = 70
+Mf = 1
+# Hfn2 = 70
+# Hfno3 = 70
+# Mfn2 = 1
+# Mfno3 = 1 
 
+###Resource
+Qn = 0.079#cell quota of N
+Qf = 0.092#cell quota of N
+
+D = 0.014 #dilution rate in experiment. 
+Iin = 40 #Light in, HL
+Rin = 8 #These are the treatment levels of N input. 0, 0.1, 0.5, 8. 
+
+###Parametes for light intensity calculation (eqs 7-10)
+#Growth rate is spatially (i.e. depth) dependent. The average growth rates (eqs 4 - 6) for 
+#each species are light dependent. Light intensity is dependent on population 
+#densities, depth, and some physical parameters as described by equation 7.
+# 
+#The integral in eq. 8 could be implemented directly in this code. However, 
+#the authors show that this integral can be solved analytically which leads to 
+#equations 9-10. These equations only require the endpoints of light intensity: 
+#i.e., the light at depth 0, and at the mixing depth z_M, at the bottom of the 
+#container.
+Kbg = 4.75 #Background turbidity. In a few cases this is 11
+zM = 0.05 #mixing depth
+kF = 5.68 #light attenutation constants. 
+kN = 4.86 #This is determined by eq 13 for Synechococcus
+ef = 8 #
+
+#Put these parameters all together in a list to pass to deSolve with the model
+#definition. 
 parms = list(
-			rA = rA, cA1 = cA1, cA2 = cA2, aij = aij, muA = muA, 
-			rD = rD, cD2 = cD2, muD = muD, aji = aji, 
-			gN1 = gN1, K_N1 = K_N1,  
-			gN2 = gN2, K_N2 = K_N2 
+			mn = mn, gmn = gmn, Mn = Mn, Hn = Hn, 
+			mf = mf, gmfn03 = gmfn03, gmfn2 = gmfn2, Hf = Hf, Mf = Mf,  
+			Qn = Qn, Qf = Qf, D= D, Iin = Iin, Rin = Rin, Kbg = Kbg, zM = zM, kF = kF,
+			kN = kN, ef=ef
 		 )
 
 #=============================================================================
@@ -76,17 +127,26 @@ tend = 100
 delta1 = 0.1
 times  = seq(from = 0, to = tend, by = delta1)
 tl = length(times)
-minit =  c(A =1, D=1, N1 = K_N1, N2=K_N2 )
-ad_out = ode(y=minit, times=times, func=ad_mod, parms=parms)
+#Use ICs to help set the scenario. E.g., when Pn or Pf =0, 
+#this is a monoculture experiment. Otherwise, use ICs from those reported in 
+#Table 1
+minit =  c(Pn = 0,Pf = 0.5, R = Rin)
+
+#Run the model
+agawin_out = ode(y=minit, times=times, func=agawin_mod, parms=parms)
 
 #=============================================================================
 # Plot
 #=============================================================================
+#Black is Pn (Cyanothece) 
+#Red is Pf (Chlorella)
+#Blue is R (N)
 
-plot( ad_out [,2], t="l", ylab = "Time", xlab = "Population density")
-cuse = c("red","blue","green")
-for ( n in 3:5) {
-	lines (ad_out[,n], col = cuse[n] )
+plot( agawin_out [,2], t="l", ylab = "Time", xlab = "Population density", 
+	ylim = c(0, max(agawin_out[,2:4]) ) )
+cuse = c("black","black","red","blue","green")
+for ( n in 3:4) {
+	lines (agawin_out[,n], col = cuse[n] )
 }
 
 
