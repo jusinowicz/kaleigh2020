@@ -54,7 +54,7 @@ agawin_mod = function(times,sp,parms){
 
 			#N fixer (Eq 2): 
 			dPf = Pf * ( gf_ave - mf )			 
-			#New light attenutation coefficient for Synech
+			#New light attenutation coefficient for Synech (Eq. 13)
 			dks = 3*(1.37-0.5*log(Iout)-ks)
 
 			####Resource (N) (Eq 3): 
