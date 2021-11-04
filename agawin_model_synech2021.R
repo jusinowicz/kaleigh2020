@@ -6,6 +6,11 @@
 # can become available to algae when diazotrophs die. 
 # 
 # Eventually the demographic rates will become temperature dependent. 
+#
+# This version of the code is specifically for the consumer species 
+# Synechococcus. There is an extra equation in the ODE system for the 
+# light attenuation coefficient of this species because it adjusts this
+# dynamically according to light levels. 
 #=============================================================================
 # load libraries
 #=============================================================================
@@ -33,7 +38,7 @@ agawin_mod = function(times,sp,parms){
 		{	
 			##### Determine species-specific average growth rates as a function
 			##### of resource availibility and light intensity (eqs. 7, 9-10)
-			Iout = Iin *(exp( zM*(-Kbg - kN*Pn - kF*Pf) ) ) #eq 7 at zM
+			Iout = Iin *(exp( zM*(-Kbg - kN*Pn - ks*Pf) ) ) #eq 7 at zM
 		
 			#Average growth rate of Pn
 			gn_ave = gmn * (R/(Mn+R))*( ( log(Hn+Iin) - log(Hn+Iout) ) / 
@@ -46,13 +51,16 @@ agawin_mod = function(times,sp,parms){
 			##### Consumer dynamics 
 			#Algae (Eq 1) : 
 			dPn = Pn * ( gn_ave - mn) 
+
 			#N fixer (Eq 2): 
 			dPf = Pf * ( gf_ave - mf )			 
-			
+			#New light attenutation coefficient for Synech
+			dks = 3*(1.37-0.5*log(Iout)-ks)
+
 			####Resource (N) (Eq 3): 
 			dR = D*(Rin - R) - Qn*gn_ave*Pn - Pf*gf_ave*Qf + ef*Pf*gf_ave*Qf
 
-	  	list( c(dPn,dPf,dR) )
+	  	list( c(dPn,dPf,dR,dks) )
 		})	
 
 }  
@@ -66,21 +74,21 @@ agawin_mod = function(times,sp,parms){
 mn = 0.014 #mortality
 
 #These terms are all for the growth rate gn_ave. 
-gmn = 0.06 #Max gr
-Mn = 0.308 #Half saturation constants 
-Hn = 80
+gmn = 0.051 #Max gr
+Mn = 0.08 #Half saturation constants 
+Hn = 24.8
 
 ###Fixer
 mf =0.014 #mortality
 
 #These terms are all for the growth rates gfno3 and gfn2. There are two sets of
 #these for high and low light: 
-#Use the high light treatment for now.
+#Use the low light treatment for Synech.
 gmfn03 = .084
-gmfn2 =  0.025
+gmfn2 =  0.060
 #Half saturation constants 
 #All of Hs and Ms are set to be equal by the authors. 
-Hf = 70
+Hf = 56
 Mf = 1
 # Hfn2 = 70
 # Hfno3 = 70
@@ -88,12 +96,12 @@ Mf = 1
 # Mfno3 = 1 
 
 ###Resource
-Qn = 0.079#cell quota of N
+Qn = 0.012#cell quota of N
 Qf = 0.092#cell quota of N
 
 D = 0.014 #dilution rate in experiment. 
-Iin = 40 #Light in, HL
-Rin = 8 #These are the treatment levels of N input. 0, 0.1, 0.5, 8. 
+Iin = 20 #Light in, HL
+Rin = 0.1 #These are the treatment levels of N input. 0, 0.1, 0.5, 8. 
 
 ###Parametes for light intensity calculation (eqs 7-10)
 #Growth rate is spatially (i.e. depth) dependent. The average growth rates (eqs 4 - 6) for 
@@ -105,10 +113,9 @@ Rin = 8 #These are the treatment levels of N input. 0, 0.1, 0.5, 8.
 #equations 9-10. These equations only require the endpoints of light intensity: 
 #i.e., the light at depth 0, and at the mixing depth z_M, at the bottom of the 
 #container.
-Kbg = 4.75 #4.75 #Background turbidity. In a few cases this is 11
+Kbg = 4.75 #Background turbidity. In a few cases this is 11
 zM = 0.05 #mixing depth
-kF = 4.86 #light attenutation constants. 
-kN = 5.68 #This is determined by eq 13 for Synechococcus
+kN = 4.86 #This is determined by eq 13 for Synechococcus
 ef = 8 #
 
 #Put these parameters all together in a list to pass to deSolve with the model
@@ -116,7 +123,7 @@ ef = 8 #
 parms = list(
 			mn = mn, gmn = gmn, Mn = Mn, Hn = Hn, 
 			mf = mf, gmfn03 = gmfn03, gmfn2 = gmfn2, Hf = Hf, Mf = Mf,  
-			Qn = Qn, Qf = Qf, D= D, Iin = Iin, Rin = Rin, Kbg = Kbg, zM = zM, kF = kF,
+			Qn = Qn, Qf = Qf, D= D, Iin = Iin, Rin = Rin, Kbg = Kbg, zM = zM,
 			kN = kN, ef=ef
 		 )
 
@@ -130,7 +137,7 @@ tl = length(times)
 #Use ICs to help set the scenario. E.g., when Pn or Pf =0, 
 #this is a monoculture experiment. Otherwise, use ICs from those reported in 
 #Table 1
-minit =  c(Pn = 0.04,Pf = 0.16, R = Rin)
+minit =  c(Pn = 0.5,Pf = 0.12, R = Rin, ks = 0.5)
 
 #Run the model
 agawin_out = ode(y=minit, times=times, func=agawin_mod, parms=parms)
@@ -138,7 +145,7 @@ agawin_out = ode(y=minit, times=times, func=agawin_mod, parms=parms)
 #=============================================================================
 # Plot
 #=============================================================================
-#Black is Pn (Cyanothece) 
+#Black is Pn (Synechococcus) 
 #Red is Pf (Chlorella)
 #Blue is R (N)
 
