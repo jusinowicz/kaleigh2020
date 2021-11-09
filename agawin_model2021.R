@@ -29,7 +29,7 @@ library(deSolve)
 #=============================================================================
 
 agawin_mod = function(times,sp,parms){
-	with( as.list(c(parms, sp )), #args = parms (list of parameters), sp (matrix of outputs (N) -- add a line each time step)
+	with( as.list(c(parms, sp )), #args = parms (list of parameters), sp (matrix of outputs (Pf, Pn, R) -- add a line of values at each time step)
 		{	
 			##### Determine species-specific average growth rates as a function
 			##### of resource availibility and light intensity (eqs. 7, 9-10)
@@ -53,21 +53,21 @@ agawin_mod = function(times,sp,parms){
 
 			##### Consumer dynamics 
 			#Algae (Eq 1) : 
-			dPn = Pn * ( gn_ave - mn) #dPn calculates change at next time point, so uses all variables from the last time step; Jacob has factored out PN
+			dPn = Pn * ( gn_ave - mn) #dPn calculates change at next time point, so uses all variables from the last time step; Jacob has factored out PN; this is stored as the new population size at this time step
 			#N fixer (Eq 2): 
 			dPf = Pf * ( gf_ave - mf )			 
 			
 			####Resource (N) (Eq 3): 
-			dR = D*(Rin - R) - Qn*gn_ave*Pn - Pf*gfno3_ave*Qf + ef*Pf*gfn2_ave*Qf
+			dR = D*(Rin - R) - Qn*gn_ave*Pn - Pf*gfno3_ave*Qf + ef*Pf*gfn2_ave*Qf 
 
-	  	list( c(dPn,dPf,dR) )
+	  	list( c(dPn,dPf,dR) ) #also store these outputs in the matrix; these are the "dynamic variables", which they calculate as the growth rates they are and then back calculate N at current time step from
 		})	
 
 }  
 
 
 #=============================================================================
-# Set values of the population parameters
+# Set values of the population parameters (high light scenario; i.e. no synechococcus)
 #=============================================================================
 ###From table 3
 ###Non-fixer (there are two of these, chlorella for now)
@@ -79,7 +79,7 @@ Mn = 0.308 #Half saturation constants
 Hn = 80
 
 ###Fixer
-mf =0.014 #mortality
+mf = 0.014 #mortality
 
 #These terms are all for the growth rates gfno3 and gfn2. There are two sets of
 #these for high and low light: 
@@ -112,42 +112,42 @@ Rin = 8 #These are the treatment levels of N input. 0, 0.1, 0.5, 8.
 #the authors show that this integral can be solved analytically which leads to 
 #equations 9-10. These equations only require the endpoints of light intensity: 
 #i.e., the light at depth 0, and at the mixing depth z_M, at the bottom of the 
-#container.
+#container. these values in text of table 1
 Kbg = 4.75 #4.75 #Background turbidity. In a few cases this is 11
 zM = 0.05 #mixing depth
 kF = 4.86 #light attenutation constants. 
 kN = 5.68 #This is determined by eq 13 for Synechococcus
-ef = 8 #
+ef = 8 #epsilon
 
 #Put these parameters all together in a list to pass to deSolve with the model
 #definition. 
 parms = list(
 			mn = mn, gmn = gmn, Mn = Mn, Hn = Hn, 
 			mf = mf, gmfn03 = gmfn03, gmfn2 = gmfn2, Hf = Hf, Mf = Mf,  
-			Qn = Qn, Qf = Qf, D= D, Iin = Iin, Rin = Rin, Kbg = Kbg, zM = zM, kF = kF,
-			kN = kN, ef=ef
+			Qn = Qn, Qf = Qf, D = D, Iin = Iin, Rin = Rin, Kbg = Kbg, zM = zM, kF = kF,
+			kN = kN, ef = ef
 		 )
 
 #=============================================================================
-# Run the model with initial conditions 
+# Run the model with initial conditions (IC)
 #=============================================================================
-tend = 3000
-delta1 = 0.1
+tend = 3000 #t final
+delta1 = 0.1 #size of time step
 times  = seq(from = 0, to = tend, by = delta1)
-tl = length(times)
+tl = length(times) 
 #Use ICs to help set the scenario. E.g., when Pn or Pf =0, 
 #this is a monoculture experiment. Otherwise, use ICs from those reported in 
 #Table 1
-minit =  c(Pn = 0.04,Pf = 0.16, R = Rin)
+minit =  c(Pn = 10,Pf = 0.16, R = Rin) #model initial values
 
 #Run the model
-agawin_out = ode(y=minit, times=times, func=agawin_mod, parms=parms)
+agawin_out = ode(y = minit, times = times, func = agawin_mod, parms = parms)
 
 #=============================================================================
 # Plot
 #=============================================================================
-#Black is Pn (Cyanothece) 
-#Red is Pf (Chlorella)
+#Black is Pn (Chorella) 
+#Red is Pf (Cyanothece)
 #Blue is R (N)
 
 plot( agawin_out [,2], t="l", ylab = "Time", xlab = "Population density", 
