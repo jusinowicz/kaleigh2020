@@ -41,8 +41,8 @@ agawin_mod = function(times,sp,parms){
 			(log(Iin)-log(Iout) ) )
 
 			#Average growth rate of Pf (eq 10)
-			gf_ave = (gmfn2 *Mf + gmfn03*R)/(Mf+R)*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
-			(log(Iin)-log(Iout)) )
+			# gf_ave = (gmfn2 *Mf + gmfn03*R)/(Mf+R)*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
+			# (log(Iin)-log(Iout)) )
 
 			#Average growth rates for each nitrogen source, separated
 			gfno3_ave =  gmfn03 *  (R/(Mf+R))*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
@@ -50,6 +50,8 @@ agawin_mod = function(times,sp,parms){
 
 			gfn2_ave = gmfn2 * (R/(Mf+R))*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
 			(log(Iin)-log(Iout) ) )
+
+			gf_ave = gfn2_ave + gfno3_ave
 
 			##### Consumer dynamics 
 			#Algae (Eq 1) : 
