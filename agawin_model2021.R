@@ -45,10 +45,10 @@ agawin_mod = function(times,sp,parms){
 			(log(Iin)-log(Iout)) )
 
 			#Average growth rates for each nitrogen source, separated
-			gfno3_ave = gmfn2 * (R/(Mf+R))*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
+			gfno3_ave =  gmfn03 *  (R/(Mf+R))*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
 			(log(Iin)-log(Iout) ) )
 
-			gfn2_ave = gmfn03 * (R/(Mf+R))*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
+			gfn2_ave = gmfn2 * (R/(Mf+R))*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
 			(log(Iin)-log(Iout) ) )
 
 			##### Consumer dynamics 
@@ -60,7 +60,7 @@ agawin_mod = function(times,sp,parms){
 			####Resource (N) (Eq 3): 
 			dR = D*(Rin - R) - Qn*gn_ave*Pn - Pf*gfno3_ave*Qf + ef*Pf*gfn2_ave*Qf
 
-	  	list( c(dPn,dPf,dR) )
+	  	list( c(dPn,dPf,dR, Iout=Iout, gn_ave=gn_ave, gfno3_ave  = gfno3_ave,gfn2_ave =gfn2_ave ) )
 		})	
 
 }  
@@ -138,7 +138,18 @@ tl = length(times)
 #Use ICs to help set the scenario. E.g., when Pn or Pf =0, 
 #this is a monoculture experiment. Otherwise, use ICs from those reported in 
 #Table 1
-minit =  c(Pn = 0.04,Pf = 0.16, R = Rin)
+Pn_ic =0.04
+Pf_ic =0.16
+Iout = Iin-1
+gn_ic = gmn * (Rin/(Mn+Rin))*( ( log(Hn+Iin) - log(Hn+Iout) ) / 
+			(log(Iin)-log(Iout) ) )
+gfno3_ic = gmfn03 *  (Rin/(Mf+Rin))*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
+			(log(Iin)-log(Iout) ) )
+gfn2_ic = gmfn2 * (Rin/(Mf+Rin))*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
+			(log(Iin)-log(Iout) ) )
+
+minit =  c(Pn = Pn_ic ,Pf = Pf_ic, R = Rin, Iout=Iout, gn_ave=gn_ic, 
+				gfno3_ave  = gfno3_ic,gfn2_ave =gfn2_ic )
 
 #Run the model
 agawin_out = ode(y=minit, times=times, func=agawin_mod, parms=parms)
