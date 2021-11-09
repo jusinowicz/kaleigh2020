@@ -48,7 +48,7 @@ agawin_mod = function(times,sp,parms){
 			gfno3_ave =  gmfno3 *  (R/(Mfno3+R))*( ( log(Hfno3+Iin) - log(Hfno3+Iout) ) / 
 			(log(Iin)-log(Iout) ) )
 
-			gfn2_ave = gmfn2 * (R/(Mfn2+R))*( ( log(Hfn2+Iin) - log(Hfn2+Iout) ) / 
+			gfn2_ave = gmfn2 * (Mfn2/(Mfn2+R))*( ( log(Hfn2+Iin) - log(Hfn2+Iout) ) / 
 			(log(Iin)-log(Iout) ) )
 
 			gf_ave = gfn2_ave + gfno3_ave
