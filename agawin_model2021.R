@@ -29,23 +29,24 @@ library(deSolve)
 #=============================================================================
 
 agawin_mod = function(times,sp,parms){
-	with( as.list(c(parms, sp )),
+	with( as.list(c(parms, sp )), #args = parms (list of parameters), sp (matrix of outputs (N) -- add a line each time step)
 		{	
 			##### Determine species-specific average growth rates as a function
 			##### of resource availibility and light intensity (eqs. 7, 9-10)
-			Iout = Iin *(exp( zM*(-Kbg - kN*Pn - kF*Pf) ) ) #eq 7 at zM
+			Iout = Iin *(exp( zM*(-Kbg - kN*Pn - kF*Pf) ) ) #eq 7 at zM #Iout = average amount of light as a function of depth
+			       #k = light attenuation, P is abundance, for species N and F (F is fixer) 
 		
-			#Average growth rate of Pn
+			#Average growth rate of Pn (eq 9)
 			gn_ave = gmn * (R/(Mn+R))*( ( log(Hn+Iin) - log(Hn+Iout) ) / 
 			(log(Iin)-log(Iout) ) )
 
-			#Average growth rate of Pf
+			#Average growth rate of Pf (eq 10)
 			gf_ave = (gmfn2 *Mf + gmfn03*R)/(Mf+R)*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
 			(log(Iin)-log(Iout)) )
 
 			##### Consumer dynamics 
 			#Algae (Eq 1) : 
-			dPn = Pn * ( gn_ave - mn) 
+			dPn = Pn * ( gn_ave - mn) #dPn calculates change at next time point, so uses all variables from the last time step; Jacob has factored out PN
 			#N fixer (Eq 2): 
 			dPf = Pf * ( gf_ave - mf )			 
 			
