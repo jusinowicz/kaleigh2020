@@ -171,11 +171,20 @@ agawin_out = ode(y = minit, times = times, func = agawin_mod, parms = parms)
 #Red is Pf (Cyanothece)
 #Blue is R (N)
 
-plot( agawin_out [,2], t="l", ylab = "Time", xlab = "Population density", 
+plot( agawin_out [,2], t="l", ylab = "pop density", xlab = "time", 
 	ylim = c(0, max(agawin_out[,2:4]) ) )
 cuse = c("black","black","red","blue","green")
 for ( n in 3:4) {
 	lines (agawin_out[,n], col = cuse[n] )
 }
 
+agawin_out <- as.data.frame(agawin_out)
 
+#plot
+agawin_out %>% 
+  ggplot() +
+  geom_smooth(aes(x = time, y = gn_ave), colour = "red") +
+  geom_smooth(aes(x = time, y = gfno3_ave), colour = "blue") +
+  geom_smooth(aes(x = time, y = gfn2_ave), colour = "green") +
+  geom_smooth(aes(x = time, y = R), colour = "black")
+  
