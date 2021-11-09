@@ -44,6 +44,13 @@ agawin_mod = function(times,sp,parms){
 			gf_ave = (gmfn2 *Mf + gmfn03*R)/(Mf+R)*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
 			(log(Iin)-log(Iout)) )
 
+			#Average growth rates for each nitrogen source, separated
+			gfno3_ave = gmfn2 * (R/(Mf+R))*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
+			(log(Iin)-log(Iout) ) )
+
+			gfn2_ave = gmfn03 * (R/(Mf+R))*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
+			(log(Iin)-log(Iout) ) )
+
 			##### Consumer dynamics 
 			#Algae (Eq 1) : 
 			dPn = Pn * ( gn_ave - mn) #dPn calculates change at next time point, so uses all variables from the last time step; Jacob has factored out PN
@@ -51,7 +58,7 @@ agawin_mod = function(times,sp,parms){
 			dPf = Pf * ( gf_ave - mf )			 
 			
 			####Resource (N) (Eq 3): 
-			dR = D*(Rin - R) - Qn*gn_ave*Pn - Pf*gf_ave*Qf + ef*Pf*gf_ave*Qf
+			dR = D*(Rin - R) - Qn*gn_ave*Pn - Pf*gfno3_ave*Qf + ef*Pf*gfn2_ave*Qf
 
 	  	list( c(dPn,dPf,dR) )
 		})	
