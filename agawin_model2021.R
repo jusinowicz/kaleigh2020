@@ -97,12 +97,7 @@ gmfn2 =  0.025
 Hfno3 = 70
 Hfn2 = 70
 Mfno3 = 1
-Mfn2 = 1
-
-# Hfn2 = 70
-# Hfno3 = 70
-# Mfn2 = 1
-# Mfno3 = 1 
+Mfn2 = 0.5
 
 ###Resource
 Qn = 0.079#cell quota of N
