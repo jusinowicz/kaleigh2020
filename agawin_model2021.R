@@ -41,14 +41,14 @@ agawin_mod = function(times,sp,parms){
 			(log(Iin)-log(Iout) ) )
 
 			#Average growth rate of Pf (eq 10)
-			# gf_ave = (gmfn2 *Mf + gmfn03*R)/(Mf+R)*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
+			# gf_ave = (gmfn2 *Mf + gmfno3*R)/(Mf+R)*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
 			# (log(Iin)-log(Iout)) )
 
 			#Average growth rates for each nitrogen source, separated
-			gfno3_ave =  gmfn03 *  (R/(Mf+R))*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
+			gfno3_ave =  gmfno3 *  (R/(Mfno3+R))*( ( log(Hfno3+Iin) - log(Hfno3+Iout) ) / 
 			(log(Iin)-log(Iout) ) )
 
-			gfn2_ave = gmfn2 * (R/(Mf+R))*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
+			gfn2_ave = gmfn2 * (R/(Mfn2+R))*( ( log(Hfn2+Iin) - log(Hfn2+Iout) ) / 
 			(log(Iin)-log(Iout) ) )
 
 			gf_ave = gfn2_ave + gfno3_ave
@@ -90,12 +90,15 @@ mf = 0.014 #mortality
 #These terms are all for the growth rates gfno3 and gfn2. There are two sets of
 #these for high and low light: 
 #Use the high light treatment for now.
-gmfn03 = .084
+gmfno3 = .084
 gmfn2 =  0.025
 #Half saturation constants 
-#All of Hs and Ms are set to be equal by the authors. 
-Hf = 70
-Mf = 1
+#Don't assume that Hs and Ms are set to be equal, as they are by the authors. 
+Hfno3 = 70
+Hfn2 = 70
+Mfno3 = 1
+Mfn2 = 1
+
 # Hfn2 = 70
 # Hfno3 = 70
 # Mfn2 = 1
@@ -129,7 +132,8 @@ ef = 8 #epsilon
 #definition. 
 parms = list(
 			mn = mn, gmn = gmn, Mn = Mn, Hn = Hn, 
-			mf = mf, gmfn03 = gmfn03, gmfn2 = gmfn2, Hf = Hf, Mf = Mf,  
+			mf = mf, gmfn03 = gmfn03, gmfn2 = gmfn2, Hfno3  = Hfno3 , Mfno3  = Mfno3 ,  
+			Hfn2  = Hfn2, Mfn2  = Mfn2 , 
 			Qn = Qn, Qf = Qf, D = D, Iin = Iin, Rin = Rin, Kbg = Kbg, zM = zM, kF = kF,
 			kN = kN, ef = ef
 		 )
@@ -152,9 +156,9 @@ Pf_ic =0.16
 Iout = Iin-1
 gn_ic = gmn * (Rin/(Mn+Rin))*( ( log(Hn+Iin) - log(Hn+Iout) ) / 
 			(log(Iin)-log(Iout) ) )
-gfno3_ic = gmfn03 *  (Rin/(Mf+Rin))*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
+gfno3_ic = gmfno3 *  (Rin/(Mfno3+Rin)	)*( ( log(Hfno3+Iin) - log(Hfno3+Iout) ) / 
 			(log(Iin)-log(Iout) ) )
-gfn2_ic = gmfn2 * (Rin/(Mf+Rin))*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
+gfn2_ic = gmfn2 * (Rin/(Mfn2+Rin))*( ( log(Hfn2+Iin) - log(Hfn2+Iout) ) / 
 			(log(Iin)-log(Iout) ) )
 
 minit =  c(Pn = Pn_ic ,Pf = Pf_ic, R = Rin, Iout=Iout, gn_ave=gn_ic, 
