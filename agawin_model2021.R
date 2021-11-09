@@ -158,7 +158,7 @@ gfn2_ic = gmfn2 * (Rin/(Mf+Rin))*( ( log(Hf+Iin) - log(Hf+Iout) ) /
 			(log(Iin)-log(Iout) ) )
 
 minit =  c(Pn = Pn_ic ,Pf = Pf_ic, R = Rin, Iout=Iout, gn_ave=gn_ic, 
-				gfno3_ave  = gfno3_ic,gfn2_ave =gfn2_ic )
+				gfno3_ave  = gfno3_ic,gfn2_ave = gfn2_ic )
 
 
 #Run the model
@@ -178,13 +178,15 @@ for ( n in 3:4) {
 	lines (agawin_out[,n], col = cuse[n] )
 }
 
+#get it read to plot with ggplot
 agawin_out <- as.data.frame(agawin_out)
 
 #plot
 agawin_out %>% 
   ggplot() +
-  geom_smooth(aes(x = time, y = gn_ave), colour = "red") +
-  geom_smooth(aes(x = time, y = gfno3_ave), colour = "blue") +
-  geom_smooth(aes(x = time, y = gfn2_ave), colour = "green") +
-  geom_smooth(aes(x = time, y = R), colour = "black")
+  geom_point(aes(x = time, y = Pn), colour = "green") +
+  # geom_point(aes(x = time, y = gfno3_ave), colour = "blue") +
+  # geom_point(aes(x = time, y = gfn2_ave), colour = "green") +
+  geom_point(aes(x = time, y = Pf), colour = "orange") + #total growth rate of fixer
+  geom_point(aes(x = time, y = R), colour = "black")
   
