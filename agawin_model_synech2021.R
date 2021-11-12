@@ -45,8 +45,17 @@ agawin_mod = function(times,sp,parms){
 			(log(Iin)-log(Iout) ) )
 
 			#Average growth rate of Pf
-			gf_ave = (gmfn2 *Mf + gmfn03*R)/(Mf+R)*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
-			(log(Iin)-log(Iout)) )
+			# gf_ave = (gmfn2 *Mf + gmfn03*R)/(Mf+R)*( ( log(Hf+Iin) - log(Hf+Iout) ) / 
+			# (log(Iin)-log(Iout)) )
+
+			#Average growth rates for each nitrogen source, separated
+			gfno3_ave =  gmfno3 *  (R/(Mfno3+R))*( ( log(Hfno3+Iin) - log(Hfno3+Iout) ) / 
+			(log(Iin)-log(Iout) ) )
+
+			gfn2_ave = gmfn2 * (Mfn2/(Mfn2+R))*( ( log(Hfn2+Iin) - log(Hfn2+Iout) ) / 
+			(log(Iin)-log(Iout) ) )
+
+			gf_ave = gfn2_ave + gfno3_ave
 
 			##### Consumer dynamics 
 			#Algae (Eq 1) : 
@@ -60,7 +69,9 @@ agawin_mod = function(times,sp,parms){
 			####Resource (N) (Eq 3): 
 			dR = D*(Rin - R) - Qn*gn_ave*Pn - Pf*gf_ave*Qf + ef*Pf*gf_ave*Qf
 
-	  	list( c(dPn,dPf,dR,dks) )
+	  		#list( c(dPn,dPf,dR,dks) )
+	  		list( c(dPn,dPf,dR, dks, Iout=Iout, gn_ave=gn_ave, gfno3_ave  = gfno3_ave,gfn2_ave =gfn2_ave ) )
+
 		})	
 
 }  
@@ -84,16 +95,14 @@ mf =0.014 #mortality
 #These terms are all for the growth rates gfno3 and gfn2. There are two sets of
 #these for high and low light: 
 #Use the low light treatment for Synech.
-gmfn03 = .084
+gmfno3 = .084
 gmfn2 =  0.060
 #Half saturation constants 
-#All of Hs and Ms are set to be equal by the authors. 
-Hf = 56
-Mf = 1
-# Hfn2 = 70
-# Hfno3 = 70
-# Mfn2 = 1
-# Mfno3 = 1 
+#Don't assume that Hs and Ms are set to be equal, as they are by the authors. 
+Hfno3 = 56
+Hfn2 = 56
+Mfno3 = 1
+Mfn2 = 0.5
 
 ###Resource
 Qn = 0.012#cell quota of N
@@ -122,9 +131,10 @@ ef = 8 #
 #definition. 
 parms = list(
 			mn = mn, gmn = gmn, Mn = Mn, Hn = Hn, 
-			mf = mf, gmfn03 = gmfn03, gmfn2 = gmfn2, Hf = Hf, Mf = Mf,  
-			Qn = Qn, Qf = Qf, D= D, Iin = Iin, Rin = Rin, Kbg = Kbg, zM = zM,
-			kN = kN, ef=ef
+			mf = mf, gmfno3 = gmfno3, gmfn2 = gmfn2, Hfno3  = Hfno3 , Mfno3  = Mfno3 ,  
+			Hfn2  = Hfn2, Mfn2  = Mfn2 , 
+			Qn = Qn, Qf = Qf, D = D, Iin = Iin, Rin = Rin, Kbg = Kbg, zM = zM,
+			kN = kN, ef = ef
 		 )
 
 #=============================================================================
@@ -137,7 +147,22 @@ tl = length(times)
 #Use ICs to help set the scenario. E.g., when Pn or Pf =0, 
 #this is a monoculture experiment. Otherwise, use ICs from those reported in 
 #Table 1
-minit =  c(Pn = 0.5,Pf = 0.12, R = Rin, ks = 0.5)
+
+minit =  c(Pn = 10,Pf = 0.16, R = Rin) #model initial values
+
+Pn_ic =0.04
+Pf_ic =0.16
+Iout = Iin-1
+gn_ic = gmn * (Rin/(Mn+Rin))*( ( log(Hn+Iin) - log(Hn+Iout) ) / 
+			(log(Iin)-log(Iout) ) )
+gfno3_ic = gmfno3 *  (Rin/(Mfno3+Rin)	)*( ( log(Hfno3+Iin) - log(Hfno3+Iout) ) / 
+			(log(Iin)-log(Iout) ) )
+gfn2_ic = gmfn2 * (Rin/(Mfn2+Rin))*( ( log(Hfn2+Iin) - log(Hfn2+Iout) ) / 
+			(log(Iin)-log(Iout) ) )
+
+minit =  c(Pn = Pn_ic ,Pf = Pf_ic, R = Rin, ks = 0.5, Iout=Iout, gn_ave=gn_ic, 
+				gfno3_ave  = gfno3_ic,gfn2_ave = gfn2_ic )
+
 
 #Run the model
 agawin_out = ode(y=minit, times=times, func=agawin_mod, parms=parms)

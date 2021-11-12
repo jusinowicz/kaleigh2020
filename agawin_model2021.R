@@ -63,7 +63,7 @@ agawin_mod = function(times,sp,parms){
 			dR = D*(Rin - R) - Qn*gn_ave*Pn - Pf*gfno3_ave*Qf + ef*Pf*gfn2_ave*Qf 
 
 
-	  	list( c(dPn,dPf,dR) ) #also store these outputs in the matrix; these are the "dynamic variables", which they calculate as the growth rates they are and then back calculate N at current time step from
+	  	#list( c(dPn,dPf,dR) ) #also store these outputs in the matrix; these are the "dynamic variables", which they calculate as the growth rates they are and then back calculate N at current time step from
 
 	  	list( c(dPn,dPf,dR, Iout=Iout, gn_ave=gn_ave, gfno3_ave  = gfno3_ave,gfn2_ave =gfn2_ave ) )
 
@@ -127,7 +127,7 @@ ef = 8 #epsilon
 #definition. 
 parms = list(
 			mn = mn, gmn = gmn, Mn = Mn, Hn = Hn, 
-			mf = mf, gmfn03 = gmfn03, gmfn2 = gmfn2, Hfno3  = Hfno3 , Mfno3  = Mfno3 ,  
+			mf = mf, gmfno3 = gmfno3, gmfn2 = gmfn2, Hfno3  = Hfno3 , Mfno3  = Mfno3 ,  
 			Hfn2  = Hfn2, Mfn2  = Mfn2 , 
 			Qn = Qn, Qf = Qf, D = D, Iin = Iin, Rin = Rin, Kbg = Kbg, zM = zM, kF = kF,
 			kN = kN, ef = ef
